@@ -1,0 +1,228 @@
+\documentclass{article}
+%preámbulo
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, activeacute]{babel}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multirow, array}
+\PassOptionsToPackage{hyphens}{url}\usepackage[hidelinks]{hyperref}
+\hypersetup{
+colorlinks=true,
+linkcolor=blue,
+urlcolor=cyan,
+}
+
+\begin{document}
+\title{\textcolor{blue}{Informe de instalación de Elinks}}
+\author{\textcolor{blue}{Leandro Spagnolo, Juan Bertoni, Santiago Tosoni, Julián Cabrera}}
+\date{\textcolor{blue}{4 de agosto de 2020}}
+\maketitle
+\abstract{En este informe se detalla el proceso seguido para la instalación del navegador de Internet para consola ``Elinks'. En este proceso, básicamente instalamos todos los programas y todas las herramientas necesarias para aprovechar al máximo Elinks, siempre bajo las restricciones que impone no contar con una interfaz gráfica; y luego descargamos el repositorio con el código fuente de Elinks, y lo compilamos e instalamos.}
+\tableofcontents
+
+\section{Instalación de los programas básicos}
+
+\item Para poder obtener código fuente de repositorios desde internet, utilizamos GIT. Este fue instalado ingresando el comando \$ sudo apt-get install git.
+\item También ingresamos \$ sudo apt-get install build-essential, que es importante para construir programas antes de compilarlos.
+\item Por otro lado, también notamos que no todos los vínculos necesarios para realizar descargas con wget funcionaban. Este problema fue solucionado actualizando wget, con el comando \$ sudo apt-get install wget.
+\item Además, para asegurarnos de trabajar con un repositorio siempre actualizado, ingresamos \$ sudo apt-get update. De esta forma, el repositorio del cual obteníamos los programas instalados ya se encontraba actualizado
+\item También ingresamos \$ sudo apt-get upgrade, para tener actualizado el software. 
+
+\section{Instalación de las dependencias}
+
+Antes de proceder a la obtención del código fuente desde Internet, nos detuvimos para instalar librerias y programas necesarios para instalar Elinks y poder utilizar muchas funciones que si no no estarían disponibles. Este es el resumen de todas estas dependencias de Elinks, que también se encuentra disponible en \url{http://elinks.cz/documentation/installation.html}:
+
+\begin{itemize}
+\item Lua o Guile: permite la escritura de scripting plugins.
+\item zlib 1.2.0.2 o más: Para manejar gzip y descomprimir archivos comprimidos, tanto locales como enviados desde el servidor
+\item bzip2: Ídem, para documentos comprimidos con bzip2.
+\item Utilidades LZMA: Ídem, para archivos comprimidos con LZMA.
+\item OpenSSL o GNU TLS: Para llevar a cabo navegación HTTP segura.
+\item pkg-config: Necesario para localizar ciertas librerías (al menos GNU TLS y TRE).
+\item GPM: Mouse de propósito general (General Purpose Mouse, GPM) para soporte del mouse.
+\item expat: Paquete de herramientas del parseador XML necesarios para soporte de XBEL.
+\item TRE: Para realizar búsquedas regexp.
+\item libsmbclient: Librería requerida para soporte de smb://protocol.
+\item rxvt-unicode: Para emulador terminal que soporta 88 colores.
+\item xterm con 256 colores:  necesario para utilizar el modo 256 colores. Las versiones más actualizadas de PuTTY también cuentan con esta funcionalidad.
+\item libidn: Para nombres de dominio internacionalzados.
+\item SpiderMonkey: Motor JavaScript de Mozilla para tener soporte de JavaScript/ECMAScript en ELinks.
+\end{itemize}
+
+Debe recordarse que estamos trabajando en una computadora sin interfaz gráfica. De este modo, GPM, rxvt-unicode y xterm se vuelven inútiles. En efecto, al no poder utilizar el mouse, GPM no tiene utilidad. Por otro lado, a pesar de que el framebuffer de Linux pueda soportar 256 (o más) colores, el driver de la consola no. De hecho, las aplicaciones de consola siempre estarán limitadas a 16 colores. Esto hace inútil instalar rxvt-unicode para obtener 88 colores, o xterm para obtener 256. 
+
+A continuación, explicaremos los pasos seguidos para la instalación de cada dependencia:
+
+\subsection{Instalación de Lua}
+
+Lua se encuentra disponible en Internet mediante el enlace \url{https://www.lua.org/ftp/lua-5.0.3.tar.gz}, que automáticamente inicia su descarga en un archivo comprimido. Para comenzar la instalación, creamos un directorio específico ingresando \$ mkdir install\_lua e ingresamos a él con \$ cd install\_lua.
+
+Inicialmente, para iniciar la descarga ingresamos:
+
+\$ wget \url{https://www.lua.org/ftp/lua-5.0.3.tar.gz}
+
+Ingresando el comando ls, vimos que ahora en este directorio se encontraba un archivo llamado lua-5.0.3.tar.gz.
+
+Para descomprimir el archivo, utilizamos tar de la siguiente manera:
+
+\$ tar -zxf lua-5.0.3.tar.gz
+
+Esto creó el archivo lua-5.0.3 (lo cual verificamos con ls); el archivo descomprimido.
+
+Este archivo no era un archivo común; en realidad era un directorio, al cual ingresamos con el comando \$ cd lua-5.0.3.
+
+De la lectura detallada del manual de instalación, accesible mediante el enlace \url{http://elinks.or.cz/documentation/manual.html}, que da aborda a grandes rasgos del proceso de instalación, puede inferirse que es recomendable descomentar la línea de POPEN en ./configure (quitarle el \#). De este modo, ingresamos nano config para poder ajustar este detalle. Oprimiendo Ctrl+w, ingresamos popen, y buscamos la palabra. La primera aparición no era la buscada, pues se encontraba en una línea no comentada (que no iniciaba con \#). Luego de repetir la búsqueda y leer un poco, notamos que en realidad había tres líneas juntas comentadas que contenían el nombre de la variable POPEN...
+
+Resolvimos la duda respecto a cuál descomentar de la siguiente manera:
+
+\begin{itemize}
+\item La última no era, puesto que arriba decía que probablemente funcionara para algunos sistemas de Windows (en cualquier caso, no corresponde a Linux)
+\item Para definir entre la primera y la segunda, notamos que tomando la segunda, no teníamos la posibilidad de soportar pipes, mientras que en la primera esto no sucedía
+\item La primera opción era la que debía elegirse en sistemas no POSIX (como Linux) que tuvieran popen y pclose (verificamos la existencia de los mismos en Linux ingresando man popen, que explicaba las funciones popen y pclose, lo cual indicaba que existían)
+\end{itemize}
+
+Entonces, elegimos la primera opción y descomentamos la línea:
+
+\#POPEN= -DUSE\_POPEN=1
+
+Que ahora quedó así:
+
+POPEN= -DUSE\_POPEN=1
+
+Luego, cerramos nano y comenzamos con el procedimiento clásico para instalación de software:
+
+\begin{itemize}
+\item Primero, ingresamos el comando \$ ./configure para construir el programa
+\item Luego, lo compilamos con \$  make
+\item Después, checkeamos con el comando \$ make check
+\item Finalmente, utilizamos \$ sudo make install
+\end{itemize}
+
+\subsection{Instalación de zlib}
+
+Navegando en Internet, encontramos que la librería correspondiente es zlib1g. Entonces, ingresamos:
+
+\$ sudo apt-get install zlib1g
+
+\subsection{Instalación de bzip2}
+
+En este caso, la librería es bzip2:
+
+\$ sudo apt-get install bzip2
+
+\subsection{Instalación de LZMA Utils}
+
+Nuevamente, al igual que con Lua, descargamos desde Internet el archivo comprimido y luego lo descomprimimos. Regresamos al directorio del usuario con \$ cd, creamos un directorio específico con \$ mkdir install\_lzma, y nos movimos hacia él con \$ cd install\_lzma. Tipeamos:
+
+\$ wget \url{https://tukaani.org/lzma/lzma-4.32.7.tar.gz}
+
+Este comando en realidad había fallado, pero fue allí cuando descubrimos que era necesario actualizar wget como se había detallado más arriba. Una vez hecho esto, reingresamos el comando y funcionó:
+
+\$ wget \url{https://tukaani.org/lzma/lzma-4.32.7.tar.gz}
+
+Luego, con el comando ls, notamos que el archivo comprimido se llamaba lzma-4.32.7.tar.gz. Lo descomprimimos ingresando:
+
+\$ tar -zxf lzma-4.32.7.tar.gz
+
+Entonces, cambiamos al directorio, ahora descomprimido, mediante el comando \$ cd lzma-4.32.7. Repetimos el mismo procedimiento que con Lua:
+
+\begin{itemize}
+\item ingresamos el comando \$ ./configure, para construir;
+\item ingresamos \$ make, para compilar;
+\item tipeamos \$ make check, para verificar;
+\item finalizamos con \$ sudo make install, para instalar.
+\end{itemize}
+
+\subsection{Instalación de Open SSL}
+
+Luego de realizar múltiples búsquedas en Internet, descubrimos que la librería libssl-dev es la que corresponde a OpenSSL. Para instalarla, ingresamos el comando:
+
+\$ sudo apt-get install libssl-dev
+
+\subsection{Instalación de pkg-config}
+
+A continuación, para la instalación de pkg-config, también procedemos con una mecánica similar
+
+\$ sudo apt-get install pkg-config
+
+\subsection{Instalación de expat}
+
+Hacemos lo mismo, instalando expat con este comando:
+
+\$ sudo apt-get install expat
+
+\subsection{Instalación de TRE}
+
+La instalación de TRE es un poco más compleja. De hecho, el procedimiento es similar a la instalación de Elinks en sí, solo que no hay que instalar tantas dependencias complejas.
+
+Para empezar, lo primero que hicimos fue clonar el repositorio con GIT, que habíamos instalado previamente. Una vez que regresamos al directorio del usuario con cd y creamos y nos fuimos al directorio install\_TRE con mkdir TRE y cd TRE, usamos el comando: 
+
+\$ git \url{https://github.com/laurikari/tre/}
+
+Ingresando al enlace provisto mediante Internet, no solo está disponible el repositorio, sino también una explicación relacionada a la compilación. Básicamente, se nos informó de una lista de herramientas necesarias para la compilación de TRE (de hecho muchas son de gran utilidad para compilar software complejo en general). Estas herramientas eran autoconf, automake, gettext, libtool y zip (opcional). Para instalarlas, ingresamos los comandos:
+
+\begin{itemize}
+\item \$ sudo make install autoconf
+\item \$ sudo make install automake
+\item \$ sudo make install gettext
+\item \$ sudo make install libtool
+\item \$ sudo make install zip
+\end{itemize}
+
+Después, siguiendo la guía de la págna de Internet, tipeamos:
+
+\$ ./utils/autogen.sh
+
+Esto generó el archivo ./configure. Ahora ya podíamos repetir el mismo procedimiento que en las dos oportunidades anteriores en que compilamos un programa, ingresando la sucesión de comandos:
+
+\begin{itemize}
+\item \$ ./configure
+\item \$ make
+\item \$ make check
+\item \$ sudo make install
+\end{itemize}
+
+\subsection{Instalación de libsmbclient}
+
+Esta librería puede instalarse sencillamente con el comando:
+
+\$ sudo apt-get install libsmbclient
+
+\subsection{Instalación de libidn}
+
+En este caso, la librería buscada es libidn11-dev. Entonces, basta con tipear:
+
+\$ libidn11-dev
+
+\subsection{Instalación de SpiderMonkey} 
+
+Tras investigar en Internet, descubrimos que la librería que contiene SpiderMonkey es libmozjs-dev, con lo cual era suficiente tipear:
+
+\$ sudo apt-get install libmozjs-dev
+
+\vspace{1cm}
+
+Recordando que no se instalarán GPM, rxvt-unicode o xterm para 256 colores, esto finaliza la instalación de las dependencias.
+
+\section{Instalación de Elinks}
+
+Llegamos a la parte final del proceso de instalación:
+
+\begin{itemize}
+\item Primero, regresamos al directorio del usuario con cd, ingresamos \$ mkdir install\_Elinks, y nos vamos a ese directorio con el comando \$ cd install\_Elinks;
+\item luego, ingresamos \$ git clone \url{http://elinks.cz/elinks.git};
+\item esto crea el directorio elinks que contiene los archivos con el código fuente, al cual ingresamos mediante el comando \$ cd elinks;
+\item alistamos la rama principal, con el comando \$ git branch elinks-0.11 origin/elinks-0.11;
+\item tipeamos \$ git branch -v;
+\item una vez hecho esto, ya estamos en condiciones de ingresar \$ autogen.sh para generar el archivo configure;
+\item ingresamos el comando \$ ./configure para construir, y esperamos;
+\item tipeamos \$ make para compilar, y esperamos;
+\item checkeamos con \$ make check;
+\item e instalamos con \$ sudo make install.
+\end{itemize}
+
+Luego de esto, elinks ya queda instalado, y se puede ejecutar ingresando el comando elinks.
+
+\end{document}
