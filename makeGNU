@@ -16,7 +16,7 @@ urlcolor=cyan,
 
 \begin{document}
 \title{\textcolor{blue}{GNU make}}
-\author{\textcolor{blue}{Juan Bertoni, Santiago Tosoni, Leandro Spagnolo, Julián Cabrera}}
+\author{\textcolor{blue}{Juan Bertoni, Santiago Caligari, Leandro Spagnolo, Julián Cabrera}}
 \date{\textcolor{blue}{3 de agosto de 2020}}
 \maketitle
 \tableofcontents
