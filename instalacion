@@ -16,7 +16,7 @@ urlcolor=cyan,
 
 \begin{document}
 \title{\textcolor{blue}{Informe de instalación de Elinks}}
-\author{\textcolor{blue}{Leandro Spagnolo, Juan Bertoni, Santiago Tosoni, Julián Cabrera}}
+\author{\textcolor{blue}{Leandro Spagnolo, Juan Bertoni, Santiago Calligari, Julián Cabrera}}
 \date{\textcolor{blue}{4 de agosto de 2020}}
 \maketitle
 \abstract{En este informe se detalla el proceso seguido para la instalación del navegador de Internet para consola ``Elinks'. En este proceso, básicamente instalamos todos los programas y todas las herramientas necesarias para aprovechar al máximo Elinks, siempre bajo las restricciones que impone no contar con una interfaz gráfica; y luego descargamos el repositorio con el código fuente de Elinks, y lo compilamos e instalamos.}
