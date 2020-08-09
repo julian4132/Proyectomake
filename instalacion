@@ -164,11 +164,11 @@ Para empezar, lo primero que hicimos fue clonar el repositorio con GIT, que hab�
 Ingresando al enlace provisto mediante Internet, no solo está disponible el repositorio, sino también una explicación relacionada a la compilación. Básicamente, se nos informó de una lista de herramientas necesarias para la compilación de TRE (de hecho muchas son de gran utilidad para compilar software complejo en general). Estas herramientas eran autoconf, automake, gettext, libtool y zip (opcional). Para instalarlas, ingresamos los comandos:
 
 \begin{itemize}
-\item \$ sudo make install autoconf
-\item \$ sudo make install automake
-\item \$ sudo make install gettext
-\item \$ sudo make install libtool
-\item \$ sudo make install zip
+\item \$ sudo apt-get install autoconf
+\item \$ sudo apt-get install automake
+\item \$ sudo apt-get install gettext
+\item \$ sudo apt-get install libtool
+\item \$ sudo apt-get install zip
 \end{itemize}
 
 Después, siguiendo la guía de la págna de Internet, tipeamos:
